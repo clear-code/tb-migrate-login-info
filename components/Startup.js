@@ -63,20 +63,25 @@ MigrateLoginInfoStartupService.prototype = {
 
 	migrateLogins : function()
 	{
+		mydump('migrateLogins');
 		var shouldSkipProcessedRules = prefs.getPref('extensions.' + ID + '.skipProcessedRules');
 		prefs.getChildren('extensions.' + ID + '.migration').forEach(function(aKey) {
 			var rule = prefs.getPref(aKey);
+			mydump('rule: ' + aKey + ' = ' + rule);
 			var lastDate = prefs.getPref(aKey + '.lastDate');
 			if (lastDate && shouldSkipProcessedRules) {
 				lastDate = new Date(lastDate);
+				mydump('skip already processed rule (' + lastDate + ')');
 				return;
 			}
 
 			if (typeof rule === 'string') {
 				this.doMigration(rule);
+				mydump('successfully migrated.');
 				prefs.setPref(aKey + '.lastDate', (new Date()).toISOString());
 			}
 			else {
+				mydump('invalid type rule (' + (typeof rule) + ')');
 			}
 		}, this);
 	},
@@ -101,8 +106,11 @@ MigrateLoginInfoStartupService.prototype = {
 		}
 
 		var sourceLogins = this.getLoginsFor(sourceURI);
+		mydump('sourceLogins: ' + sourceLogins.length);
 		var oldLogins = this.getLoginsFor(targetURI);
+		mydump('oldLogins: ' + oldLogins.length);
 		sourceLogins.forEach(function(aSourceLogin) {
+			mydump('migrating: user = ' + aSourceLogin.username);
 			var oldLogin = oldLogins.filter(function(aOldLogin) {
 				return aOldLogin.username == aLogin.username;
 			})[0];
@@ -119,11 +127,14 @@ MigrateLoginInfoStartupService.prototype = {
 			);
 
 			if (oldLogin) {
+				mydump('updating...');
 				LoginManager.modifyLogin(oldLogin, newLogin);
 			}
 			else {
+				mydump('adding...');
 				LoginManager.addLogin(newLogin);
 			}
+			mydump('done.');
 		});
 	},
 
