@@ -4,9 +4,14 @@ PACKAGE_NAME = migrate-login-info
 
 all: xpi
 
-xpi: makexpi/makexpi.sh
-	git submodule update
+xpi: makexpi/makexpi.sh copy-extlib
 	makexpi/makexpi.sh -n $(PACKAGE_NAME) -o
+
+copy-extlib:
+	git submodule update
+	cp extlib/**/*.jsm modules/lib/
+	cp extlib/**/*.js modules/lib/
+	rm modules/**/*.test.js
 
 makexpi/makexpi.sh:
 	git submodule update --init
