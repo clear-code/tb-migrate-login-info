@@ -1,7 +1,9 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 component	{8e6a601b-91f5-4fdc-8a3b-c19f2c393ad0}	components/Startup.js
 contract	@clear-code.com/migrate-login-info/startup;1	{8e6a601b-91f5-4fdc-8a3b-c19f2c393ad0}
 category	profile-after-change	MigrateLoginInfoStartupService	@clear-code.com/migrate-login-info/startup;1
 
+resource	migrate-login-info-modules	modules/
