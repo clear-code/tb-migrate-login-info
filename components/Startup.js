@@ -14,12 +14,11 @@ const kNAME = 'MigrateLoginInfoStartupService';
 const ObserverService = Cc['@mozilla.org/observer-service;1']
 		.getService(Ci.nsIObserverService);
 
-const Pref = Cc['@mozilla.org/preferences;1']
-		.getService(Ci.nsIPrefBranch)
-
 const DEBUG_KEY = 'extensions.' + ID + '.debug';
 
 var DEBUG = false;
+
+Components.utils.import('resource://migrate-login-info-modules/lib/prefs.js');
 
 function mydump()
 {
@@ -55,7 +54,7 @@ MigrateLoginInfoStartupService.prototype = {
  
 	init : function() 
 	{
-		DEBUG = Pref.getBoolPref(DEBUG_KEY);
+		DEBUG = prefs.getPref(DEBUG_KEY);
 		mydump('initialize');
 
 	},
