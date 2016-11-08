@@ -9,7 +9,7 @@ xpi: makexpi/makexpi.sh copy-extlib
 
 copy-extlib:
 	git submodule update
-	cp extlib/**/*.jsm modules/lib/
+	#cp extlib/**/*.jsm modules/lib/
 	cp extlib/**/*.js modules/lib/
 	rm modules/**/*.test.js
 
