@@ -20,6 +20,8 @@ var DEBUG = false;
 
 Components.utils.import('resource://migrate-login-info-modules/lib/prefs.js');
 
+const LoginManager = Cc['@mozilla.org/login-manager;1'].getService(Ci.nsILoginManager);
+
 function mydump()
 {
 	if (!DEBUG)
@@ -56,7 +58,93 @@ MigrateLoginInfoStartupService.prototype = {
 	{
 		DEBUG = prefs.getPref(DEBUG_KEY);
 		mydump('initialize');
+		this.migrateLogins();
+	},
 
+	migrateLogins : function()
+	{
+		prefs.getChildren('extensions.' + ID + '.migration').forEach(function(aKey) {
+			var rule = prefs.getPref(aKey);
+			if (typeof rule === 'string')
+				this.doMigration(rule);
+			else
+				mydump('invalid type rule: ' + aKey + ' (' + (typeof rule));
+		}, this);
+	},
+
+	doMigration : function(aRule)
+	{
+		var matchResult = aRule.match(/\s*([^:\s]+):([^\s]+)\s*=>\s([^:\s]+):([^\s]+)/);
+		if (!matchResult) {
+			mydump('invalid rule: '+aRule);
+			return;
+		}
+		var sourceType = matchResult[1];
+		var sourceHost = matchResult[2];
+		var targetType = matchResult[3];
+		var targetHost = matchResult[4];
+
+		var sourceURI = this.getURI(sourceType, sourceHost);
+		var targetURI = this.getURI(targetType, targetHost);
+		if (!sourceURI || !targetURI) {
+			mydump('could not get URI: ' + aRule + ' / ' + sourceURI + ' => ' + targetURI);
+			return;
+		}
+
+		var sourceLogins = this.getLoginsFor(sourceURI);
+		var oldLogins = this.getLoginsFor(targetURI);
+		sourceLogins.forEach(function(aSourceLogin) {
+			var oldLogin = oldLogins.filter(function(aOldLogin) {
+				return aOldLogin.username == aLogin.username;
+			})[0];
+
+			var newLogin = Cc['@mozilla.org/login-manager/loginInfo;1'].createInstance(Ci.nsILoginInfo);
+			newLogin.init(
+			  targetURI, // 'smtp://smtp.example.com'
+			  null,
+			  targetURI, // 'smtp://smtp.example.com'
+			  aSourceLogin.username,
+			  aSourceLogin.password,
+			  '',
+			  ''
+			);
+
+			if (oldLogin) {
+				LoginManager.modifyLogin(oldLogin, newLogin);
+			}
+			else {
+				LoginManager.addLogin(newLogin);
+			}
+		});
+	},
+
+	getURI : function(aType, aHost)
+	{
+		var scheme;
+		switch (aType.toLowerCase())
+		{
+			case 'pop3':
+				scheme = 'mailbox';
+				break;
+
+			case 'imap':
+				scheme = 'imap';
+				break;
+
+			case 'smtp':
+				scheme = 'smtp';
+				break;
+
+			default:
+				mydump('invalid type: ' + aType);
+				return '';
+		}
+		return scheme + '://' + aHost;
+	},
+
+	getLoginsFor : function(aURI)
+	{
+		return LoginManager.findLogins({}, aURI, null, aURI);
 	},
   
 	QueryInterface : function(aIID) 
