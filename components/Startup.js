@@ -112,7 +112,7 @@ MigrateLoginInfoStartupService.prototype = {
 		sourceLogins.forEach(function(aSourceLogin) {
 			mydump('migrating: user = ' + aSourceLogin.username);
 			var oldLogin = oldLogins.filter(function(aOldLogin) {
-				return aOldLogin.username == aLogin.username;
+				return aOldLogin.username == aSourceLogin.username;
 			})[0];
 
 			var newLogin = Cc['@mozilla.org/login-manager/loginInfo;1'].createInstance(Ci.nsILoginInfo);
