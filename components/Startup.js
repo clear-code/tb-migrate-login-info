@@ -61,6 +61,38 @@ MigrateLoginInfoStartupService.prototype = {
 		this.migrateLogins();
 	},
 
+	get servers : function()
+	{
+		if (this._servers)
+			return this._servers;
+
+		this._servers = {};
+
+		const SMTPManager = Cc['@mozilla.org/messengercompose/smtp;1'].getService(Ci.nsISmtpService);
+		this._servers.smtp = this.toArray(SMTPManager.servers, Ci.nsISmtpServer);
+
+		this._servers.pop3 = [];
+		this._servers.imap = [];
+
+		const accounts = this.toArray(accountManager.accounts, Ci.nsIMsgAccount);
+		accounts.forEach(function(aAccount) {
+			if (!aAccount.defaultIdentity) // ignore local folder account
+				return;
+			let incomingServer = aAccount.incomingServer.QueryInterface(Ci.nsIMsgIncomingServer);
+			switch (incomingServer.type) {
+				case 'pop3':
+					this._servers.pop3.push(incomingServer.QueryInterface(Ci.nsIPop3IncomingServer));
+					break;
+
+				case 'imap':
+					this._servers.imap.push(incomingServer.QueryInterface(Ci.nsIImapIncomingServer));
+					break;
+			}
+		}, this);
+
+		return this._servers;
+	},
+
 	migrateLogins : function()
 	{
 		mydump('migrateLogins');
@@ -88,15 +120,30 @@ MigrateLoginInfoStartupService.prototype = {
 
 	doMigration : function(aRule)
 	{
-		var matchResult = aRule.match(/\s*([^:\s]+):([^\s]+)\s*=>\s([^:\s]+):([^\s]+)/);
+		var matchResult = aRule.match(/\s*([^:\s]+):([^\s]+)\s*=>\s([^:\s]+):(.+)$/);
 		if (!matchResult) {
 			mydump('invalid rule: '+aRule);
 			return;
 		}
 		var sourceType = matchResult[1];
 		var sourceHost = matchResult[2];
+		var [sourceHostName, sourcePort] = sourceHost.split(':');
+
 		var targetType = matchResult[3];
 		var targetHost = matchResult[4];
+
+		matchResult = targetHost.match(/([^(]+)\s*(?:\(([^)]+)\)\s*)?/);
+		targetHost = matchResult[1];
+		var targetParams = matchResult[2];
+		var [targetHostName,targetPort] = targetHost.split(':');
+
+		var authMethod, socketType;
+		matchResult = targetParams.match(/authMethod\s*=\s*([^\s)]+)/i);
+		if (matchResult)
+			authMethod = matchResult[1].toLowerCase();
+		matchResult = targetParams.match(/socketType\s*=\s*([^\s)]+)/i);
+		if (matchResult)
+			socketType = matchResult[1].toLowerCase();
 
 		var sourceURI = this.getURI(sourceType, sourceHost);
 		var targetURI = this.getURI(targetType, targetHost);
@@ -135,7 +182,42 @@ MigrateLoginInfoStartupService.prototype = {
 				LoginManager.addLogin(newLogin);
 			}
 			mydump('done.');
-		});
+
+			var sourceServer, targetServer;
+			var sourceServers = this.servers[sourceType];
+			for (let i = 0, maxi = sourceServers.length; i < maxi; i++) {
+				let server = sourceServers[i];
+				if (server.realHostName == sourceHostName &&
+					server.port == sorucePort) {
+					sourceServer = server;
+					break;
+				}
+			}
+			var targetServers = this.servers[targetType];
+			for (let i = 0, maxi = targetServers.length; i < maxi; i++) {
+				let server = targetServers[i];
+				if (server.realHostName == targetHostName &&
+					server.port == targetPort) {
+					targetServer = server;
+					break;
+				}
+			}
+
+			if (!targetServer) {
+				mydump('no server to be updated.');
+				return;
+			}
+
+			if (authMethod) {
+				// set auth method
+			}
+			if (socketType) {
+				// set socket type
+			}
+			if (!authMethod && !socketType && sourceServer) {
+				// inherit auth method and socket type
+			}
+		}, this);
 	},
 
 	getURI : function(aType, aHost)
@@ -166,7 +248,32 @@ MigrateLoginInfoStartupService.prototype = {
 	{
 		return LoginManager.findLogins({}, aURI, null, aURI);
 	},
-  
+
+	toArray : function(aEnumerator, aInterface) {
+		aInterface = aInterface || Ci.nsISupports;
+		let array = [];
+
+		if (aEnumerator instanceof Ci.nsISupportsArray) {
+			let count = aEnumerator.Count();
+			for (let i = 0; i < count; ++i) {
+				array.push(aEnumerator.QueryElementAt(i, aInterface));
+			}
+		}
+		else if (aEnumerator instanceof Ci.nsIArray) {
+			let count = aEnumerator.length;
+			for (let i = 0; i < count; ++i) {
+				array.push(aEnumerator.queryElementAt(i, aInterface));
+			}
+		}
+		else if (aEnumerator instanceof Ci.nsISimpleEnumerator) {
+			while (aEnumerator.hasMoreElements()) {
+				array.push(aEnumerator.getNext().QueryInterface(aInterface));
+			}
+		}
+
+		return array;
+	},
+ 
 	QueryInterface : function(aIID) 
 	{
 		if (!aIID.equals(Ci.nsIObserver) &&
