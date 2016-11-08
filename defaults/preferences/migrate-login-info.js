@@ -4,4 +4,5 @@
 
 // pref("extensions.migrate-login-info@clear-code.com.migration.0", "pop3:mail.example.com => smtp:mail.example.com");
 
+pref("extensions.migrate-login-info@clear-code.com.skipProcessedRules", true);
 pref("extensions.migrate-login-info@clear-code.com.debug", false);

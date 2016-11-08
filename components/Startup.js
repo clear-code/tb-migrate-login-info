@@ -63,12 +63,23 @@ MigrateLoginInfoStartupService.prototype = {
 
 	migrateLogins : function()
 	{
+		var shouldSkipProcessedRules = prefs.getPref('extensions.' + ID + '.skipProcessedRules');
 		prefs.getChildren('extensions.' + ID + '.migration').forEach(function(aKey) {
+			var lastDate = prefs.getPref(aKey + '.lastDate');
+			if (lastDate && shouldSkipProcessedRules) {
+				lastDate = new Date(lastDate);
+				mydump('skip already processed rule: ' + rule + ' (' + lastDate + ')');
+				return;
+			}
+
 			var rule = prefs.getPref(aKey);
-			if (typeof rule === 'string')
+			if (typeof rule === 'string') {
 				this.doMigration(rule);
-			else
-				mydump('invalid type rule: ' + aKey + ' (' + (typeof rule));
+				prefs.setPref(aKey + '.lastDate', (new Date()).toISOString());
+			}
+			else {
+				mydump('invalid type rule: ' + aKey + ' (' + (typeof rule) + ')');
+			}
 		}, this);
 	},
 
