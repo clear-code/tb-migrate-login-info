@@ -163,26 +163,7 @@ MigrateLoginInfoStartupService.prototype = {
 			}
 			mydump('done.');
 
-			var sourceServer, targetServer;
-			var sourceServers = this.servers[parsed.source.type];
-			for (let i = 0, maxi = sourceServers.length; i < maxi; i++) {
-				let server = sourceServers[i];
-				if (server.realHostName == parsed.source.hostName &&
-					server.port == parsed.source.port) {
-					sourceServer = server;
-					break;
-				}
-			}
-			var targetServers = this.servers[parsed.target.type];
-			for (let i = 0, maxi = targetServers.length; i < maxi; i++) {
-				let server = targetServers[i];
-				if (server.realHostName == parsed.target.hostName &&
-					server.port == parsed.target.port) {
-					targetServer = server;
-					break;
-				}
-			}
-
+			var targetServer = this.getServer(parsed.target);
 			if (!targetServer) {
 				mydump('no server to be updated.');
 				return;
@@ -194,8 +175,11 @@ MigrateLoginInfoStartupService.prototype = {
 			if (socketType) {
 				// set socket type
 			}
-			if (!authMethod && !socketType && sourceServer) {
+			if (!authMethod && !socketType) {
+				let sourceServer = this.getServer(parsed.source);
+				if (sourceServer) {
 				// inherit auth method and socket type
+				}
 			}
 		}, this);
 	},
@@ -246,6 +230,18 @@ MigrateLoginInfoStartupService.prototype = {
 				socketType: socketType
 			}
 		};
+	},
+
+	getServer : function(aParams)
+	{
+		var servers = this.servers[aParams.type];
+		for (let i = 0, maxi = servers.length; i < maxi; i++) {
+			let server = servers[i];
+			if (server.realHostName == aParams.hostName &&
+				server.port == aParams.port)
+				return server;
+		}
+		return null;
 	},
 
 	getURI : function(aType, aHost)
