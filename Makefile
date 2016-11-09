@@ -5,7 +5,7 @@ PACKAGE_NAME = migrate-login-info
 all: xpi
 
 xpi: makexpi/makexpi.sh copy-extlib
-	makexpi/makexpi.sh -n $(PACKAGE_NAME) -o
+	makexpi/makexpi.sh -n $(PACKAGE_NAME) -o -v
 
 copy-extlib:
 	git submodule update
