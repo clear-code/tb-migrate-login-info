@@ -163,24 +163,7 @@ MigrateLoginInfoStartupService.prototype = {
 			}
 			mydump('done.');
 
-			var targetServer = this.getServer(parsed.target);
-			if (!targetServer) {
-				mydump('no server to be updated.');
-				return;
-			}
-
-			if (authMethod) {
-				// set auth method
-			}
-			if (socketType) {
-				// set socket type
-			}
-			if (!authMethod && !socketType) {
-				let sourceServer = this.getServer(parsed.source);
-				if (sourceServer) {
-				// inherit auth method and socket type
-				}
-			}
+			this.updateServerOptions(parsed.target, parsed.source);
 		}, this);
 	},
 
@@ -242,6 +225,31 @@ MigrateLoginInfoStartupService.prototype = {
 				return server;
 		}
 		return null;
+	},
+
+	updateServerOptions : function(aTargetParams, aSourceParams)
+	{
+		var targetServer = this.getServer(aTargetParams);
+		if (!targetServer) {
+			mydump('no server to be updated.');
+			return;
+		}
+
+		if (aTargetParams.authMethod) {
+			// set auth method
+		}
+		if (aTargetParams.socketType) {
+			// set socket type
+		}
+		if (aTargetParams.authMethod || aTargetParams.socketType)
+			return;
+
+		var sourceServer = this.getServer(aSourceParams);
+		if (!sourceServer)
+			return;
+
+		mydump('inherit auth method from the soruce server.');
+		// inherit auth method and socket type
 	},
 
 	getURI : function(aType, aHost)
