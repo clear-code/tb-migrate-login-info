@@ -219,13 +219,18 @@ MigrateLoginInfoStartupService.prototype = {
 
 	getServer : function(aParams)
 	{
+		mydump('finding server for ' + JSON.stringify(aParams));
 		var servers = this.servers[aParams.type];
 		for (let i = 0, maxi = servers.length; i < maxi; i++) {
 			let server = servers[i];
+			mydump('  ' + i + ': ' + server.realHostName + '(' + server.port + ')');
 			if (server.realHostName == aParams.hostName &&
 				server.port == aParams.port)
+				mydump('  => match');
 				return server;
+			}
 		}
+		mydump('=> no match');
 		return null;
 	},
 
