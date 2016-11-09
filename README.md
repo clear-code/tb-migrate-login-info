@@ -35,7 +35,7 @@ Possible values for `authMethod` and `socketType` are listed at [MailNewsTypes2.
  * authMethod
    * `none` or `1`
    * `old` or `2`
-   * `passwordCleartext` or `3`
+   * `passwordCleartext`, `password` or `3`
    * `passwordEncrypted` or `4`
    * `GSSAPI` or `5`
    * `NTLM` or `6`
@@ -45,5 +45,5 @@ Possible values for `authMethod` and `socketType` are listed at [MailNewsTypes2.
  * socketType
    * `plain` or `0`
    * `trySTARTTLS` or `1`
-   * `alwaysSTARTTLS` or `2`
-   * `SSL` or `3`
+   * `alwaysSTARTTLS`, `STARTTLS` or `2`
+   * `SSL`, `TLS` or `3`

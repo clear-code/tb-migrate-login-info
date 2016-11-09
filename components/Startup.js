@@ -304,6 +304,7 @@ MigrateLoginInfoStartupService.prototype = {
 				return 2;
 
 			case 'passwordcleartext':
+			case 'password':
 			case '3':
 				return 3;
 
@@ -349,10 +350,12 @@ MigrateLoginInfoStartupService.prototype = {
 				return 1;
 
 			case 'alwaysstarttls':
+			case 'starttls':
 			case '2':
 				return 2;
 
 			case 'ssl':
+			case 'tls':
 			case '3':
 				return 3;
 		}
