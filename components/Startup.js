@@ -74,6 +74,7 @@ MigrateLoginInfoStartupService.prototype = {
 		this._servers.pop3 = [];
 		this._servers.imap = [];
 
+		const accountManager = Cc['@mozilla.org/messenger/account-manager;1'].getService(Ci.nsIMsgAccountManager);
 		const accounts = this.toArray(accountManager.accounts, Ci.nsIMsgAccount);
 		accounts.forEach(function(aAccount) {
 			if (!aAccount.defaultIdentity) // ignore local folder account
