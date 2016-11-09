@@ -164,6 +164,7 @@ MigrateLoginInfoStartupService.prototype = {
 			mydump('done.');
 
 			this.updateServerOptions(parsed.target, parsed.source);
+			mydump('server options are updated.');
 		}, this);
 	},
 
