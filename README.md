@@ -27,7 +27,7 @@ You can specify authorization method for migration target, like;
 
 ~~~
 lockPref("extensions.migrate-login-info@clear-code.com.migration.1",
-         "pop3:mail3.example.com => smtp:mail3.example.com (authMethod=passwordCleartext socketType=alwaysSTARTTLS)");
+         "pop3:mail3.example.com => smtp:mail3.example.com (authMethod=password socketType=STARTTLS)");
 ~~~
 
 Possible values for `authMethod` and `socketType` are listed at [MailNewsTypes2.idl](https://dxr.mozilla.org/comm-central/source/mailnews/base/public/MailNewsTypes2.idl).
