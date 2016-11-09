@@ -187,7 +187,10 @@ MigrateLoginInfoStartupService.prototype = {
 		matchResult = targetHost.match(/([^(]+)\s*(?:\(([^)]+)\)\s*)?/);
 		targetHost = matchResult[1];
 		var targetParams = matchResult[2];
-		var [targetHostName,targetPort] = targetHost.split(':');
+		var [targetHostName, targetPort] = targetHost.split(':');
+		targetHostName = targetHostName.trim();
+		if (targetPort)
+			targetPort = targetPort.trim();
 
 		var authMethod, socketType;
 		matchResult = targetParams.match(/authMethod\s*=\s*([0-9a-z]+)/i);
