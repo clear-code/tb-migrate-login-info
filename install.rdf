@@ -5,7 +5,7 @@
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:id="migrate-login-info@clear-code.com"
                    em:name="Migrate Login Info"
-                   em:version="0.1"
+                   em:version="1.0"
                    em:type="2"
                    em:description="Migrates saved login information between servers. (POP3, IMAP, and SMTP)"
                    em:creator="ClearCode Inc."
