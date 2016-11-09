@@ -225,7 +225,7 @@ MigrateLoginInfoStartupService.prototype = {
 			let server = servers[i];
 			mydump('  ' + i + ': ' + server.realHostName + '(' + server.port + ')');
 			if (server.realHostName == aParams.hostName &&
-				server.port == aParams.port)
+				(!aParams.port || server.port == aParams.port)) {
 				mydump('  => match');
 				return server;
 			}
