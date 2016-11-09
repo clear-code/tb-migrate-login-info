@@ -164,20 +164,20 @@ MigrateLoginInfoStartupService.prototype = {
 			mydump('done.');
 
 			var sourceServer, targetServer;
-			var sourceServers = this.servers[sourceType];
+			var sourceServers = this.servers[parsed.source.type];
 			for (let i = 0, maxi = sourceServers.length; i < maxi; i++) {
 				let server = sourceServers[i];
-				if (server.realHostName == sourceHostName &&
-					server.port == sorucePort) {
+				if (server.realHostName == parsed.source.hostName &&
+					server.port == parsed.source.port) {
 					sourceServer = server;
 					break;
 				}
 			}
-			var targetServers = this.servers[targetType];
+			var targetServers = this.servers[parsed.target.type];
 			for (let i = 0, maxi = targetServers.length; i < maxi; i++) {
 				let server = targetServers[i];
-				if (server.realHostName == targetHostName &&
-					server.port == targetPort) {
+				if (server.realHostName == parsed.target.hostName &&
+					server.port == parsed.target.port) {
 					targetServer = server;
 					break;
 				}
