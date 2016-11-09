@@ -120,41 +120,20 @@ MigrateLoginInfoStartupService.prototype = {
 
 	doMigration : function(aRule)
 	{
-		var matchResult = aRule.match(/\s*([^:\s]+):([^\s]+)\s*=>\s([^:\s]+):(.+)$/);
-		if (!matchResult) {
-			mydump('invalid rule: '+aRule);
-			return;
-		}
-		var sourceType = matchResult[1];
-		var sourceHost = matchResult[2];
-		var [sourceHostName, sourcePort] = sourceHost.split(':');
-
-		var targetType = matchResult[3];
-		var targetHost = matchResult[4];
-
-		matchResult = targetHost.match(/([^(]+)\s*(?:\(([^)]+)\)\s*)?/);
-		targetHost = matchResult[1];
-		var targetParams = matchResult[2];
-		var [targetHostName,targetPort] = targetHost.split(':');
-
-		var authMethod, socketType;
-		matchResult = targetParams.match(/authMethod\s*=\s*([^\s)]+)/i);
-		if (matchResult)
-			authMethod = matchResult[1].toLowerCase();
-		matchResult = targetParams.match(/socketType\s*=\s*([^\s)]+)/i);
-		if (matchResult)
-			socketType = matchResult[1].toLowerCase();
-
-		var sourceURI = this.getURI(sourceType, sourceHost);
-		var targetURI = this.getURI(targetType, targetHost);
-		if (!sourceURI || !targetURI) {
-			mydump('could not get URI: ' + aRule + ' / ' + sourceURI + ' => ' + targetURI);
+		var parsed = this.parseRule(aRule);
+		if (!parsed) {
+			mydump('failed to migrate.');
 			return;
 		}
 
-		var sourceLogins = this.getLoginsFor(sourceURI);
+		if (!parsed.source.uri || !parsed.target.uri) {
+			mydump('could not get URI: ' + aRule + ' / ' + parsed.source.uri + ' => ' + parsed.target.uri);
+			return;
+		}
+
+		var sourceLogins = this.getLoginsFor(parsed.source.uri);
 		mydump('sourceLogins: ' + sourceLogins.length);
-		var oldLogins = this.getLoginsFor(targetURI);
+		var oldLogins = this.getLoginsFor(parsed.target.uri);
 		mydump('oldLogins: ' + oldLogins.length);
 		sourceLogins.forEach(function(aSourceLogin) {
 			mydump('migrating: user = ' + aSourceLogin.username);
@@ -164,9 +143,9 @@ MigrateLoginInfoStartupService.prototype = {
 
 			var newLogin = Cc['@mozilla.org/login-manager/loginInfo;1'].createInstance(Ci.nsILoginInfo);
 			newLogin.init(
-			  targetURI, // 'smtp://smtp.example.com'
+			  parsed.target.uri, // 'smtp://smtp.example.com'
 			  null,
-			  targetURI, // 'smtp://smtp.example.com'
+			  parsed.target.uri, // 'smtp://smtp.example.com'
 			  aSourceLogin.username,
 			  aSourceLogin.password,
 			  '',
@@ -218,6 +197,54 @@ MigrateLoginInfoStartupService.prototype = {
 				// inherit auth method and socket type
 			}
 		}, this);
+	},
+
+	parseRule : function(aRule)
+	{
+		var matchResult = aRule.match(/\s*([^:\s]+):([^\s]+)\s*=>\s([^:\s]+):(.+)$/);
+		if (!matchResult) {
+			mydump('invalid rule: '+aRule);
+			return;
+		}
+
+		var sourceType = matchResult[1];
+		var sourceHost = matchResult[2];
+		var [sourceHostName, sourcePort] = sourceHost.split(':');
+
+		var targetType = matchResult[3];
+		var targetHost = matchResult[4];
+
+		matchResult = targetHost.match(/([^(]+)\s*(?:\(([^)]+)\)\s*)?/);
+		targetHost = matchResult[1];
+		var targetParams = matchResult[2];
+		var [targetHostName,targetPort] = targetHost.split(':');
+
+		var authMethod, socketType;
+		matchResult = targetParams.match(/authMethod\s*=\s*([^\s)]+)/i);
+		if (matchResult)
+			authMethod = matchResult[1].toLowerCase();
+		matchResult = targetParams.match(/socketType\s*=\s*([^\s)]+)/i);
+		if (matchResult)
+			socketType = matchResult[1].toLowerCase();
+
+		return {
+			source: {
+				type: sourceType,
+				host: sourceHost,
+				hostName: sourceHostName,
+				port: sourcePort,
+				uri: this.getURI(sourceType, sourceHost)
+			},
+			target: {
+				type: targetType,
+				host: targetHost,
+				hostName: targetHostName,
+				port: targetPort,
+				uri: this.getURI(targetType, targetHost),
+				authMethod: authMethod,
+				socketType: socketType
+			}
+		};
 	},
 
 	getURI : function(aType, aHost)
