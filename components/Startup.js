@@ -237,10 +237,10 @@ MigrateLoginInfoStartupService.prototype = {
 		}
 
 		if (aTargetParams.authMethod) {
-			// set auth method
+			targetServer.authMethod = this.normalizeAuthMethod(aTargetParams.authMethod);
 		}
 		if (aTargetParams.socketType) {
-			// set socket type
+			targetServer.socketType = this.normalizeSocketType(aTargetParams.socketType);
 		}
 		if (aTargetParams.authMethod || aTargetParams.socketType)
 			return;
@@ -250,7 +250,8 @@ MigrateLoginInfoStartupService.prototype = {
 			return;
 
 		mydump('inherit auth method from the soruce server.');
-		// inherit auth method and socket type
+		targetServer.authMethod = sourceServer.authMethod;
+		targetServer.socketType = sourceServer.socketType;
 	},
 
 	getURI : function(aType, aHost)
@@ -280,6 +281,72 @@ MigrateLoginInfoStartupService.prototype = {
 	getLoginsFor : function(aURI)
 	{
 		return LoginManager.findLogins({}, aURI, null, aURI);
+	},
+
+	normalizeAuthMethod : function(aValue)
+	{
+		switch (String(aValue).toLowerCase()) {
+			case 'none':
+			case '1':
+				return 1;
+
+			case 'old':
+			case '2':
+				return 2;
+
+			case 'passwordcleartext':
+			case '3':
+				return 3;
+
+			case 'passwordencrypted':
+			case '4':
+				return 4;
+
+			case 'gssapi':
+			case '5':
+				return 5;
+
+			case 'ntlm':
+			case '6':
+				return 6;
+
+			case 'external':
+			case '7':
+				return 7;
+
+			case 'anything':
+			case '9':
+				return 9;
+
+			case 'oauth2':
+			case '10':
+				return 10;
+
+			default:
+				return 0;
+		}
+	},
+
+	normalizeSocketType : function(aValue)
+	{
+		switch (String(aValue).toLowerCase()) {
+			case 'plain':
+			case '0':
+			default:
+				return 0;
+
+			case 'trystarttls':
+			case '1':
+				return 1;
+
+			case 'alwaysstarttls':
+			case '2':
+				return 2;
+
+			case 'ssl':
+			case '3':
+				return 3;
+		}
 	},
 
 	toArray : function(aEnumerator, aInterface) {
