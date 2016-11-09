@@ -61,7 +61,7 @@ MigrateLoginInfoStartupService.prototype = {
 		this.migrateLogins();
 	},
 
-	get servers : function()
+	get servers()
 	{
 		if (this._servers)
 			return this._servers;
