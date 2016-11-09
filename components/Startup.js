@@ -125,6 +125,7 @@ MigrateLoginInfoStartupService.prototype = {
 			mydump('failed to migrate.');
 			return;
 		}
+		mydump('parsed rule: '+JSON.stringify(parsed));
 
 		if (!parsed.source.uri || !parsed.target.uri) {
 			mydump('could not get URI: ' + aRule + ' / ' + parsed.source.uri + ' => ' + parsed.target.uri);
